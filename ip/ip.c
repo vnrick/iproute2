@@ -49,6 +49,7 @@ static void usage(void)
 "       OPTIONS := { -V[ersion] | -s[tatistics] | -d[etails] | -r[esolve] |\n"
 "                    -f[amily] { inet | inet6 | ipx | dnet | link } |\n"
 "                    -l[oops] { maximum-addr-flush-attempts } |\n"
+"                    -n[etns] NAME \n"
 "                    -o[neline] | -t[imestamp] | -b[atch] [filename] |\n"
 "                    -rc[vbuf] [size]}\n");
 	exit(-1);
@@ -72,8 +73,8 @@ static const struct cmd {
 	{ "neighbour",	do_ipneigh },
 	{ "ntable",	do_ipntable },
 	{ "ntbl",	do_ipntable },
-	{ "link",	do_iplink },
 	{ "l2tp",	do_ipl2tp },
+	{ "link",	do_iplink },
 	{ "tunnel",	do_iptunnel },
 	{ "tunl",	do_iptunnel },
 	{ "tuntap",	do_iptuntap },
@@ -238,6 +239,14 @@ int main(int argc, char **argv)
 				exit(-1);
 			}
 			rcvbuf = size;
+		} else if (matches(opt, "-netns") == 0) {
+			argc--;
+			argv++;
+			if (argc <= 1)
+				usage();
+			if (set_netns(argv[1]))
+				exit(-1);
+
 		} else if (matches(opt, "-help") == 0) {
 			usage();
 		} else {

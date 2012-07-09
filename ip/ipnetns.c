@@ -68,6 +68,35 @@ int get_netns_fd(const char *name)
 	return open(path, O_RDONLY);
 }
 
+int set_netns(char *name)
+{
+	char net_path[MAXPATHLEN];
+	int netns;
+
+	snprintf(net_path, sizeof(net_path), "%s/%s", NETNS_RUN_DIR, name);
+	netns = open(net_path, O_RDONLY);
+	if (netns < 0) {
+		fprintf(stderr, "Cannot open network namespace: %s\n",
+			strerror(errno));
+		return -1;
+	}
+	if (setns(netns, CLONE_NEWNET) < 0) {
+		fprintf(stderr, "setting the network namespace failed: %s\n",
+			strerror(errno));
+		return -1;
+	}
+
+	if (unshare(CLONE_NEWNS) < 0) {
+		fprintf(stderr, "unshare failed: %s\n", strerror(errno));
+		return -1;
+	}
+
+	return 0;
+
+}
+
+
+
 static int netns_list(int argc, char **argv)
 {
 	struct dirent *entry;
